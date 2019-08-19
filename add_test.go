@@ -6,6 +6,8 @@ import (
 	"path"
 	"testing"
 
+	"github.com/simplyserenity/kitkit/config"
+
 	"github.com/mitchellh/cli"
 )
 
@@ -53,7 +55,7 @@ func testKitKitDirectory(t *testing.T) (string, func()) {
 		t.Fatal(err)
 	}
 
-	if err = KitkitSetup(); err != nil {
+	if err = config.KitkitSetup(); err != nil {
 		t.Fatal(err)
 	}
 

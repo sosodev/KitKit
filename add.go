@@ -6,6 +6,10 @@ import (
 	"os"
 	"path"
 
+	"github.com/simplyserenity/kitkit/utilities"
+
+	"github.com/simplyserenity/kitkit/config"
+
 	"github.com/mitchellh/cli"
 )
 
@@ -27,8 +31,9 @@ func (c *AddCommand) Run(args []string) int {
 	f.Usage = func() { c.Ui.Error(c.Help()) }
 
 	// separate the flags from the normal args so ordering doesn't matter
-	args, flags := SeparateFlags(args)
+	args, flags := utilities.SeparateFlags(args)
 	if len(args) == 0 {
+		c.Ui.Error(c.Help())
 		return 1
 	}
 
@@ -37,37 +42,32 @@ func (c *AddCommand) Run(args []string) int {
 		c.Ui.Error(err.Error())
 		return 1
 	}
+
 	binaryPath := args[0]
-
-	binaryName, err := loadBinaryName(binaryPath)
+	// check if binary exists
+	binary, err := os.Stat(binaryPath)
 	if err != nil {
-		c.Ui.Error(fmt.Sprintf("Failed to open the specified binary: %s", err.Error()))
-		return 127
+		c.Ui.Error("The specified binary doesn't exist")
+		return 1
 	}
 
+	// take its name if none specified
 	if name == "" {
-		name = binaryName
+		name = binary.Name()
 	}
 
+	// create the tagged name and path
 	taggedName := name + "-kktag:" + tag
-	taggedBinaryPath := path.Join(KitkitHome(), "binaries", taggedName)
+	taggedPath := path.Join(config.BinariesPath(), taggedName)
 
-	err = CopyFile(binaryPath, taggedBinaryPath)
+	// copy it to the binaries folder under the tagged name
+	err = utilities.CopyFile(binaryPath, taggedPath)
 	if err != nil {
-		c.Ui.Error(fmt.Sprintf("Failed to copy specified binary: %s", err.Error()))
-		return 127
+		c.Ui.Error(fmt.Sprintf("Failed to copy the binary: %s", err.Error()))
 	}
 
+	c.Ui.Output(fmt.Sprintf("Added %s tagged as %s", name, tag))
 	return 0
-}
-
-func loadBinaryName(binaryPath string) (string, error) {
-	binary, err := os.Open(binaryPath)
-	if err != nil {
-		return "", err
-	}
-
-	return binary.Name(), nil
 }
 
 func (c *AddCommand) Help() string {

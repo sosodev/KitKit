@@ -4,6 +4,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/simplyserenity/kitkit/config"
+
 	"github.com/mitchellh/cli"
 )
 
@@ -12,7 +14,7 @@ func main() {
 }
 
 func realMain(args []string) int {
-	c := cli.NewCLI("KitKit", "0.1")
+	c := cli.NewCLI("KitKit", "1.0")
 	c.Args = args
 	ui := &cli.BasicUi{
 		Reader:      os.Stdin,
@@ -20,7 +22,7 @@ func realMain(args []string) int {
 		ErrorWriter: os.Stderr,
 	}
 
-	err := KitkitSetup()
+	err := config.KitkitSetup()
 	if err != nil {
 		log.Fatalf("Failed to setup the $KITKIT_HOME directory: %s", err)
 		return 127
@@ -39,6 +41,11 @@ func realMain(args []string) int {
 		},
 		"set": func() (cli.Command, error) {
 			return &SetCommand{
+				Ui: ui,
+			}, nil
+		},
+		"remove": func() (cli.Command, error) {
+			return &RemoveCommand{
 				Ui: ui,
 			}, nil
 		},

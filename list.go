@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 
+	"github.com/simplyserenity/kitkit/utilities"
+
 	"github.com/mitchellh/cli"
 )
 
@@ -12,7 +14,7 @@ type ListCommand struct {
 }
 
 func (c *ListCommand) Run(args []string) int {
-	binaries, err := GetBinaries()
+	binaries, err := utilities.GetBinaries()
 	if err != nil {
 		c.Ui.Error(fmt.Sprintf("Failed to load binaries in $KITKIT_HOME/binaries: %s", err))
 		return 127
@@ -20,7 +22,7 @@ func (c *ListCommand) Run(args []string) int {
 
 	c.Ui.Output(fmt.Sprintf("%-10s%-10s", "name", "tag"))
 	for _, binary := range binaries {
-		name, tag := SplitTrackedName(binary.Name())
+		name, tag := utilities.SplitTrackedName(binary.Name())
 		c.Ui.Output(fmt.Sprintf("%-10s%-10s", name, tag))
 	}
 

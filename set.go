@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"path"
 
+	"github.com/simplyserenity/kitkit/utilities"
+
+	"github.com/simplyserenity/kitkit/config"
+
 	"github.com/mitchellh/cli"
 )
 
@@ -12,30 +16,30 @@ type SetCommand struct {
 }
 
 func (c *SetCommand) Run(args []string) int {
-	home := KitkitHome()
-	binPath := path.Join(home, "bin")
-	binariesPath := path.Join(home, "binaries")
+	binPath := config.BinPath()
+	binariesPath := config.BinariesPath()
 
 	targetName := args[0]
 	targetTag := args[1]
 
-	binaries, err := GetBinaries()
+	binaries, err := utilities.GetBinaries()
 	if err != nil {
 		c.Ui.Error(fmt.Sprintf("Failed to load binaries in $KITKIT_HOME/binaries: %s", err))
 		return 127
 	}
 
 	for _, binary := range binaries {
-		name, tag := SplitTrackedName(binary.Name())
+		name, tag := utilities.SplitTrackedName(binary.Name())
 
 		if name == targetName && tag == targetTag {
 			sourcePath := path.Join(binariesPath, binary.Name())
 			destinationPath := path.Join(binPath, name)
-			err := CopyFile(sourcePath, destinationPath)
+			err := utilities.CopyFile(sourcePath, destinationPath)
 			if err != nil {
 				c.Ui.Error(fmt.Sprintf("Failed to copy the specified binary: %s", err))
 				return 127
 			}
+			c.Ui.Output(fmt.Sprintf("%s is now set to use %s", name, tag))
 			return 0
 		}
 	}
@@ -48,8 +52,9 @@ func (c *SetCommand) Help() string {
 	return `
 Usage: kitkit set [binary-name] [tag]
 
-	Puts the tagged binary into $KITKIT_HOME/bin.
-	$KITKIT_HOME/bin should be on your path for it to be available.
+	Copies the specified binary from 
+	"$KITKIT_HOME/binaries" to "$KITKIT_HOME/bin".
+	"$KITKIT_HOME/bin" should be on your path for it to be available.
 `
 }
 
