@@ -23,11 +23,13 @@ type AddCommand struct {
 func (c *AddCommand) Run(args []string) int {
 	// flags
 	var name, tag string
+	var set bool
 
 	// create the flagset
 	f := flag.NewFlagSet("AddFlags", flag.ContinueOnError)
 	f.StringVar(&name, "name", "", "name")
 	f.StringVar(&tag, "tag", "latest", "tag")
+	f.BoolVar(&set, "set-now", false, "set-now")
 	f.Usage = func() { c.Ui.Error(c.Help()) }
 
 	// separate the flags from the normal args so ordering doesn't matter
@@ -56,6 +58,16 @@ func (c *AddCommand) Run(args []string) int {
 		name = binary.Name()
 	}
 
+	if !utilities.ValidIdentifier(name) {
+		c.Ui.Error(fmt.Sprintf("invalid name \"%s\" - valid names can contain alphanumeric characters, hyphens, and periods", name))
+		return 1
+	}
+
+	if !utilities.ValidIdentifier(tag) {
+		c.Ui.Error(fmt.Sprintf("invalid tag \"%s\" - valid tags can contain alphanumeric characters, hyphens, and periods", tag))
+		return 1
+	}
+
 	// create the tagged name and path
 	taggedName := name + "-kktag:" + tag
 	taggedPath := path.Join(config.BinariesPath(), taggedName)
@@ -67,6 +79,15 @@ func (c *AddCommand) Run(args []string) int {
 	}
 
 	c.Ui.Output(fmt.Sprintf("Added %s tagged as %s", name, tag))
+
+	if set {
+		sc := &SetCommand{
+			Ui: c.Ui,
+		}
+
+		return sc.Run([]string{name, tag})
+	}
+
 	return 0
 }
 
@@ -87,6 +108,8 @@ Options:
 	-tag=tag	The tag given to the binary to differentiate it from 
 				others of the same name. Defaults to "latest". 
 				Kind of like a docker tag.
+	
+	--set-now 	Immediately runs "kitkit set" after adding the specified binary
 `
 }
 

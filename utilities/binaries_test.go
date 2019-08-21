@@ -56,3 +56,27 @@ func TestSplitTrackedName(t *testing.T) {
 		})
 	}
 }
+
+func TestValidIdentifier(t *testing.T) {
+	testCases := []struct {
+		Have string
+		Want bool
+	}{
+		{
+			Have: "valid-identifier1.0",
+			Want: true,
+		},
+		{
+			Have: "invalid/identifier",
+			Want: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		got := ValidIdentifier(tc.Have)
+
+		if tc.Want != got {
+			t.Errorf("incorrect validation for \"%s\" wanted: %t got: %t", tc.Have, tc.Want, got)
+		}
+	}
+}

@@ -14,7 +14,7 @@ func main() {
 }
 
 func realMain(args []string) int {
-	c := cli.NewCLI("KitKit", "1.0")
+	c := cli.NewCLI("KitKit", "1.1")
 	c.Args = args
 	ui := &cli.BasicUi{
 		Reader:      os.Stdin,
